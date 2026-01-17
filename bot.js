@@ -1,23 +1,22 @@
 const mineflayer = require('mineflayer');
 const config = require('./settings.json');
 
-function createBot() {
-    const bot = mineflayer.createBot({
-        host: config.server.ip,
-        port: config.server.port,
-        username: config["bot-account"].username,
-        version: config.server.version, // This will stay 1.18.2
-        checkTimeoutInterval: 120000 // FIX: Increases timeout to 2 minutes for ViaBackwards lag
-    });
+const bot = mineflayer.createBot({
+    host: config.server.ip,
+    port: config.server.port,
+    username: config["bot-account"].username,
+    version: config.server.version, // Keep this as 1.18.2
+    checkTimeoutInterval: 120000,   // [FIX] Increases timeout to 120 seconds for Fabric lag
+    physicsEnabled: false          // [FIX] Prevents physics errors during the login phase
+});
 
-    bot.on('login', () => {
-        console.log(`[BotLog] ${bot.username} joined the server.`);
-    });
-
-    bot.on('spawn', () => {
-        console.log(`[BotLog] ${bot.username} spawned in the world.`);
-        // Add your auto-auth or anti-afk logic here if needed
-    });
+// Re-enable physics once the bot has safely spawned
+bot.once('spawn', () => {
+    console.log(`[BotLog] ${bot.username} spawned successfully.`);
+    setTimeout(() => {
+        bot.physicsEnabled = true;
+    }, 2000);
+});
 
     bot.on('kicked', (reason) => {
         console.log(`[BotLog] Bot was kicked from the server. Reason: ${reason}`);
